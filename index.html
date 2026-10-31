@@ -6,7 +6,7 @@
 <div id="importResult" class="panel" style="display:none;margin-top:12px" aria-live="polite">
 <strong id="importResultTitle"></strong><p id="importResultText" class="hint"></p>
 <div id="importedList" style="max-height:280px;overflow:auto"></div>
-</div><p class="sub">选择文件后点击“导入选中的词组”，完成后可直接查看词组。JSON 完整备份也可在这里恢复。</p></details><details><summary>学习记录备份 / 恢复</summary><p class="hint">下载完整 JSON 备份，包含词库、下次复习时间、记忆阶段、历史记录及设置。更换设备时，通过上方“从文件导入”恢复。</p><div class="buttons"><button id="backup">下载完整 JSON 备份</button><button id="reset" class="secondary">重置学习进度</button></div></details><details><summary>学习设置与安装方法</summary><label for="totalLimit">每天正式学习总量（张）</label><input id="totalLimit" type="number" min="1" max="500" step="1" value="20"><label for="dailyLimit">每天新词上限（张）</label><input id="dailyLimit" type="number" min="0" max="100" step="1" value="5"><label for="hardWeight">难词优先权重（0–100%）</label><input id="hardWeight" type="number" min="0" max="100" step="10" value="60"><p class="hint">每天最多完成 20 张不同卡片的正式学习，新词最多 5 张。到期旧词优先；历史遗忘次数、到期时间和记忆间隔共同决定排序。自由练习不改变间隔或正式进度。</p><p class="hint">iPhone / iPad：用 Safari 打开已部署的 HTTPS 网站 → 分享 → 添加到主屏幕。首次联网打开后可离线使用。浏览器文件预览不能可靠安装 PWA。</p></details><p class="hint">Nova English V3 · 本地优先 · 无账号、无广告 · 不会自动跨设备同步，也不会自动推送通知</p></main><script>
+</div><p class="sub">选择文件后点击“导入选中的词组”，完成后可直接查看词组。JSON 完整备份也可在这里恢复。</p></details><details><summary>学习记录备份 / 恢复</summary><p class="hint">下载完整 JSON 备份，包含词库、下次复习时间、记忆阶段、历史记录及设置。更换设备时，通过上方“从文件导入”恢复。</p><div class="buttons"><button id="backup">下载完整 JSON 备份</button><button id="reset" class="secondary">重置学习进度</button></div></details><details><summary>学习设置与安装方法</summary><label for="totalLimit">每天正式学习总量（张）</label><input id="totalLimit" type="number" min="1" max="500" step="1" value="20"><label for="dailyLimit">每天新词上限（张）</label><input id="dailyLimit" type="number" min="0" max="100" step="1" value="5"><label for="hardWeight">难词优先权重（0–100%）</label><input id="hardWeight" type="number" min="0" max="100" step="10" value="60"><p class="hint">每天最多完成 20 张不同卡片的正式学习，新词最多 5 张；如果没有足够到期旧词，今日可能少于 20 张。到期旧词优先；历史遗忘次数、到期时间和记忆间隔共同决定排序。自由练习不改变间隔或正式进度。</p><p class="hint">iPhone / iPad：用 Safari 打开已部署的 HTTPS 网站 → 分享 → 添加到主屏幕。首次联网打开后可离线使用。浏览器文件预览不能可靠安装 PWA。</p></details><p class="hint">Nova English V3.1 · 稳定性检查版 · 本地优先 · 无账号、无广告 · 不会自动跨设备同步，也不会自动推送通知</p></main><script>
 const seed=[
 ['account for variations in','解释……中的差异','Several factors may account for variations in the experimental results.','多种因素可能解释实验结果中的差异。'],
 ['distinguish between A and B','区分 A 和 B','Distinguish between short-term improvement and long-term reliability.','区分短期改善与长期可靠性。'],
@@ -30,10 +30,10 @@ const seed=[
 ['be attributed to','归因于','The improvement may be attributed to stronger interfaces.','这种改善可能归因于更强的界面。']
 ];
 const KEY='nova_english_v2'; // 保留 V2 数据
-const LEGACY='nova_english_cards_v1';const MS=86400000;let state;let mode='today',queue=[],pos=0,flipped=false;const el=id=>document.getElementById(id);const now=()=>Date.now();const startDay=t=>{let d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};const tomorrow=t=>{let d=new Date(startDay(t));d.setDate(d.getDate()+1);return d.getTime()};const dateKey=t=>{let d=new Date(t);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};const safe=s=>String(s||'').trim();const norm=s=>safe(s).toLocaleLowerCase();
+const LEGACY='nova_english_cards_v1';const MS=86400000;let state;let mode='today',queue=[],pos=0,flipped=false;const el=id=>document.getElementById(id);const now=()=>Date.now();const startDay=t=>{let d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};const tomorrow=t=>{let d=new Date(startDay(t));d.setDate(d.getDate()+1);return d.getTime()};const dateKey=t=>{let d=new Date(t);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};const safe=s=>String(s??'').trim();const norm=s=>safe(s).toLocaleLowerCase();
 function fresh(){return {version:2,cards:seed.map(a=>({front:a[0],meaning:a[1],example:a[2],translation:a[3],due:0,interval:0,ease:2.5,reps:0,lapses:0,seen:false})),history:[],settings:{dailyLimit:5,totalLimit:20,hardWeight:60}}}
 function convertLegacy(x){if(!Array.isArray(x))return null;let s=fresh();s.cards=x.filter(c=>c&&c.front).map(c=>({front:safe(c.front),meaning:safe(c.meaning),example:safe(c.example),translation:safe(c.translation),due:c.seen?(c.due||0)*MS:0,interval:Math.max(0,c.stage||0),ease:2.5,reps:c.seen?1:0,lapses:0,seen:!!c.seen}));return s}
-function validate(s){if(!s||!Array.isArray(s.cards)||s.cards.length>30000)throw Error('备份格式不正确');s.cards=s.cards.filter(c=>c&&typeof c.front==='string'&&typeof c.meaning==='string').map(c=>({...c,front:c.front.slice(0,500),meaning:c.meaning.slice(0,2000),example:safe(c.example),translation:safe(c.translation),due:Number(c.due)||0,interval:Number(c.interval)||0,ease:Number(c.ease)||2.5,reps:Number(c.reps)||0,lapses:Number(c.lapses)||0,seen:!!c.seen}));s.history=Array.isArray(s.history)?s.history.filter(h=>h&&Number.isFinite(Number(h.time))):[];s.settings={dailyLimit:Math.max(0,Math.min(100,Number(s.settings?.totalLimit===undefined?5:(s.settings?.dailyLimit??5))||0)),totalLimit:Math.max(1,Math.min(500,Number(s.settings?.totalLimit??20)||20)),hardWeight:Math.max(0,Math.min(100,Number(s.settings?.hardWeight??60)||0))};return s}
+function validate(s){if(!s||!Array.isArray(s.cards)||s.cards.length>30000)throw Error('备份格式不正确');s.cards=s.cards.filter(c=>c&&typeof c.front==='string'&&typeof c.meaning==='string').map(c=>({...c,front:c.front.slice(0,500),meaning:c.meaning.slice(0,2000),example:safe(c.example),translation:safe(c.translation),due:Number(c.due)||0,interval:Number(c.interval)||0,ease:Number(c.ease)||2.5,reps:Number(c.reps)||0,lapses:Number(c.lapses)||0,seen:!!c.seen}));s.history=Array.isArray(s.history)?s.history.filter(h=>h&&Number.isFinite(Number(h.time))&&Number(h.time)>0&&typeof h.front==='string').map(h=>({...h,time:Number(h.time)})):[];s.settings={dailyLimit:Math.max(0,Math.min(100,Number(s.settings?.dailyLimit??5)||0)),totalLimit:Math.max(1,Math.min(500,Number(s.settings?.totalLimit??20)||20)),hardWeight:Math.max(0,Math.min(100,Number(s.settings?.hardWeight??60)||0))};return s}
 try{state=JSON.parse(localStorage.getItem(KEY));if(!state){let old=JSON.parse(localStorage.getItem(LEGACY));state=convertLegacy(old)||fresh()}}catch(e){state=fresh()}try{state=validate(state)}catch(e){state=fresh()}function save(){try{localStorage.setItem(KEY,JSON.stringify(state));return true}catch(e){note('本地保存失败！请立即下载 JSON 备份。');return false}}
 function note(s){el('status').textContent=s}function dueCount(){return state.cards.filter(c=>c.seen&&c.due<=now()).length}function todayNewUsed(){return new Set(state.history.filter(h=>h.grade!=='practice'&&h.first&&dateKey(h.time)===dateKey(now())).map(h=>norm(h.front))).size}
 function todayFormal(){return state.history.filter(h=>h.grade!=='practice'&&dateKey(h.time)===dateKey(now()))}
@@ -64,7 +64,6 @@ function flip(){if(queue[pos]===undefined)return;flipped=!flipped;render()}el('c
 function rate(grade){let ix=queue[pos],c=state.cards[ix];if(!c)return;if(mode==='all'){queue.splice(pos,1);if(pos>=queue.length)pos=0;flipped=false;render();note('自由练习已完成一张，不改变记忆进度。');return;}let t=now(),first=!c.seen;c.seen=true;let days=0;if(grade==='again'){c.lapses++;c.reps=0;c.interval=0;c.ease=Math.max(1.3,c.ease-.2);c.due=t+10*60000}else if(grade==='hard'){days=c.reps===0?1:Math.max(1,Math.round(c.interval*1.2));c.interval=days;c.reps++;c.ease=Math.max(1.3,c.ease-.15);c.due=tomorrow(t)+(days-1)*MS}else if(grade==='good'){days=c.reps===0?1:c.reps===1?3:Math.max(1,Math.round(c.interval*c.ease));c.interval=days;c.reps++;c.due=tomorrow(t)+(days-1)*MS}else{days=c.reps===0?3:c.reps===1?5:Math.max(1,Math.round(c.interval*c.ease*1.3));c.interval=days;c.reps++;c.ease=Math.min(3.0,c.ease+.1);c.due=tomorrow(t)+(days-1)*MS}state.history.push({time:t,front:c.front,grade,first});queue.splice(pos,1);if(pos>=queue.length)pos=0;flipped=false;save();makeQueue();note(grade==='again'?'这张卡会在约 10 分钟后重新到期。':'已保存！下次会按你的记忆程度出现。')}
 document.querySelectorAll('[data-grade]').forEach(b=>b.onclick=()=>rate(b.dataset.grade));el('tabToday').onclick=()=>{mode='today';makeQueue()};el('tabAll').onclick=()=>{mode='all';makeQueue()};el('dailyLimit').onchange=e=>{state.settings.dailyLimit=Math.max(0,Math.min(100,Math.floor(Number(e.target.value)||0)));save();makeQueue()};el('totalLimit').onchange=e=>{state.settings.totalLimit=Math.max(1,Math.min(500,Math.floor(Number(e.target.value)||20)));save();makeQueue()};el('hardWeight').onchange=e=>{state.settings.hardWeight=Math.max(0,Math.min(100,Math.floor(Number(e.target.value)||0)));save();makeQueue()};
 function parseCSVLine(line){let out=[],s='',q=false;for(let i=0;i<line.length;i++){let x=line[i];if(x==='"'&&q&&line[i+1]==='"'){s+='"';i++}else if(x==='"')q=!q;else if(x===','&&!q){out.push(s);s=''}else s+=x}out.push(s);return out}
-function importText(txt){let count=0;for(let line of txt.replace(/^\uFEFF/,'').split(/\r?\n/)){if(!line.trim())continue;let a=(line.includes('\t')?line.split('\t'):parseCSVLine(line)).map(safe);if(a.length<2||!a[0]||!a[1]||['英文搭配','front','phrase'].includes(norm(a[0])))continue;let c=state.cards.find(c=>norm(c.front)===norm(a[0]));if(c){Object.assign(c,{meaning:a[1],example:a[2]||'',translation:a[3]||''})}else state.cards.push({front:a[0],meaning:a[1],example:a[2]||'',translation:a[3]||'',due:0,interval:0,ease:2.5,reps:0,lapses:0,seen:false});count++}save();makeQueue();note(`成功导入或更新 ${count} 条。`)}
 function fileDownload(name,content,type){let a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000)}
 let pendingImport=null;
 function showImportResult(title,detail,items=[]){
@@ -81,22 +80,21 @@ function showImportResult(title,detail,items=[]){
  if(items.length>100){const p=document.createElement('p');p.textContent=`另有 ${items.length-100} 条已导入，未在此展开。`;list.appendChild(p)}
 }
 function importWithReport(txt){
- const before=new Set(state.cards.map(c=>norm(c.front)));
- const imported=[],updated=[];
- for(const line of txt.replace(/^\\uFEFF/,'').split(/\\r?\\n/)){
+ const imported=[],updated=[];const importedKeys=new Set(),updatedKeys=new Set();
+ for(const line of txt.replace(/^\uFEFF/,'').split(/\r?\n/)){
   if(!line.trim())continue;
-  const a=(line.includes('\\t')?line.split('\\t'):parseCSVLine(line)).map(safe);
+  const a=(line.includes('\t')?line.split('\t'):parseCSVLine(line)).map(safe);
   if(a.length<2||!a[0]||!a[1]||['英文搭配','front','phrase'].includes(norm(a[0])))continue;
-  const key=norm(a[0]);let c=state.cards.find(c=>norm(c.front)===key);
-  if(c){Object.assign(c,{meaning:a[1],example:a[2]||'',translation:a[3]||''});updated.push(c)}
-  else{c={front:a[0],meaning:a[1],example:a[2]||'',translation:a[3]||'',due:0,interval:0,ease:2.5,reps:0,lapses:0,seen:false};state.cards.push(c);imported.push(c)}
+  const key=norm(a[0]);if(a[0].length>500||a[1].length>2000)continue;let c=state.cards.find(c=>norm(c.front)===key);
+  if(c){Object.assign(c,{meaning:a[1],example:a[2]||'',translation:a[3]||''});if(!updatedKeys.has(key)){updated.push(c);updatedKeys.add(key)}}
+  else{c={front:a[0],meaning:a[1],example:a[2]||'',translation:a[3]||'',due:0,interval:0,ease:2.5,reps:0,lapses:0,seen:false};state.cards.push(c);if(!importedKeys.has(key)){imported.push(c);importedKeys.add(key)}}
  }
  if(!imported.length&&!updated.length){showImportResult('未找到可导入的词组','请检查文件是否为 TSV / CSV，每行至少有英文搭配和中文含义。');return}
- save();makeQueue();
- showImportResult('✓ 导入成功！',`新增 ${imported.length} 条，更新已有 ${updated.length} 条。下方是本次导入的词组：`,[...imported,...updated]);
- note(`导入成功：新增 ${imported.length} 条，更新 ${updated.length} 条。`);
+ const saved=save();makeQueue();
+ showImportResult(saved?'✓ 导入成功！':'⚠ 已导入但保存失败' ,`新增 ${imported.length} 条，更新已有 ${updated.length} 条。下方是本次导入的词组：`,[...imported,...updated]);
+ note(`新增 ${imported.length} 条，更新 ${updated.length} 条。${saved?'已保存到本机。':'本地保存失败，请检查存储空间。'}`);
 }
-el('importText').onclick=()=>importWithReport(el('paste').value);
+el('importText').onclick=()=>{try{importWithReport(el('paste').value)}catch(err){showImportResult('导入失败',String(err?.message||err))}};
 el('importFile').onchange=e=>{
  pendingImport=e.target.files?.[0]||null;
  el('confirmImport').disabled=!pendingImport;
@@ -110,12 +108,14 @@ el('confirmImport').onclick=async()=>{
   if(f.name.toLowerCase().endsWith('.json')){
    const parsed=validate(JSON.parse(content));
    if(confirm('恢复完整 JSON 备份将替换当前词库及学习进度。确定继续吗？')){
-    state=parsed;save();makeQueue();showImportResult('✓ 备份恢复成功',`已恢复 ${state.cards.length} 条词组及 ${state.history.length} 条回答记录。`,state.cards);
+    state=parsed;const saved=save();makeQueue();showImportResult(saved?'✓ 备份恢复成功':'⚠ 恢复完成但保存失败',`已恢复 ${state.cards.length} 条词组及 ${state.history.length} 条回答记录。`,state.cards);
    }
   }else importWithReport(content);
  }catch(err){showImportResult('导入失败',String(err?.message||err))}
  finally{btn.disabled=false;btn.textContent='导入选中的词组'}
 };
 el('exportTsv').onclick=()=>{let esc=s=>safe(s).replace(/[\t\r\n]+/g,' ');fileDownload('Nova_English_词组.tsv','\uFEFF英文搭配\t中文\t英文例句\t例句翻译\n'+state.cards.map(c=>[c.front,c.meaning,c.example,c.translation].map(esc).join('\t')).join('\n'),'text/tab-separated-values;charset=utf-8');note('TSV 只导出词库，不包含学习记录。')};el('backup').onclick=()=>{fileDownload('Nova_English_完整备份_'+dateKey(now())+'.json',JSON.stringify(state,null,2),'application/json;charset=utf-8');note('完整 JSON 备份已生成，建议保存到 iCloud 云盘。')};el('reset').onclick=()=>{if(!confirm('重置全部学习进度？词组仍保留。请先备份 JSON。'))return;state.cards.forEach(c=>Object.assign(c,{due:0,interval:0,ease:2.5,reps:0,lapses:0,seen:false}));state.history=[];save();makeQueue();note('进度已重置。')};
-if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});save();makeQueue();
+window.addEventListener('error',e=>{try{note('程序遇到错误：'+String(e.message||'未知错误'))}catch(_){}});
+if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+try{save();makeQueue()}catch(e){note('启动失败：'+String(e.message||e));el('planInfo').textContent='启动失败，请保留数据并联系 Nova 检查。'}
 </script></body></html>
