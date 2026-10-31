@@ -1,4 +1,4 @@
-const CACHE='nova-english-v3-dedup-2-audit-20261031';
+const CACHE='nova-english-v3-unlearned-4-20261031';
 const CORE=['./','./index.html','./manifest.webmanifest'];
 const OPTIONAL=['./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(CORE);await Promise.all(OPTIONAL.map(u=>c.add(u).catch(()=>{})));await self.skipWaiting()})())});
